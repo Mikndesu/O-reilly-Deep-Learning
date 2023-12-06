@@ -1,5 +1,5 @@
 extern crate nalgebra as na;
-pub mod gate;
+pub mod chapter2;
 
 fn main() {
     println!("Hello, world!");
