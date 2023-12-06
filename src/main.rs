@@ -1,13 +1,15 @@
+extern crate nalgebra as na;
+
 fn main() {
     println!("Hello, world!");
 }
 
 fn and(x1: f64, x2: f64) -> i32 {
-    let w1 = 0.5;
-    let w2 = 0.5;
-    let theta = 0.7;
-    let tmp = x1 * w1 + x2 * w2;
-    return if tmp > theta { 1 } else { 0 };
+    let x = na::Vector2::new(x1, x2);
+    let w = na::Vector2::new(0.5, 0.5);
+    let b = -0.7;
+    let tmp = x.dot(&w) + b;
+    return if tmp > 0.0 { 1 } else { 0 };
 }
 
 #[test]
