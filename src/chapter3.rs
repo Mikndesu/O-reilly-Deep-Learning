@@ -54,6 +54,13 @@ fn relu(x: na::RowDVector<f64>) -> na::RowDVector<f64> {
     x.iter().map(|&t| t.max(0.0)).collect::<Vec<f64>>().into()
 }
 
+fn softmax(x: na::RowDVector<f64>) -> RowDVector<f64> {
+    let c = x.max();
+    let exp_x = x.iter().map(|&t| (t - c).exp()).collect::<Vec<f64>>();
+    let sum = exp_x.iter().sum::<f64>();
+    exp_x.iter().map(|t| t / sum).collect::<Vec<f64>>().into()
+}
+
 fn identity_fucntion(x: na::RowDVector<f64>) -> na::RowDVector<f64> {
     x
 }
