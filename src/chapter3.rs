@@ -1,3 +1,4 @@
+use nalgebra::{RowDVector, Storage};
 use plotters::{
     backend::BitMapBackend,
     chart::ChartBuilder,
@@ -22,6 +23,31 @@ fn sigmoid(x: na::RowDVector<f64>) -> na::RowDVector<f64> {
 
 fn relu(x: na::RowDVector<f64>) -> na::RowDVector<f64> {
     x.iter().map(|&t| t.max(0.0)).collect::<Vec<f64>>().into()
+}
+
+fn identity_fucntion(x: na::RowDVector<f64>) -> na::RowDVector<f64> {
+    x
+}
+
+fn first_layer(x: na::RowVector2<f64>) -> na::RowDVector<f64> {
+    let w1 = na::Matrix2x3::<f64>::new(0.1, 0.3, 0.5, 0.2, 0.4, 0.6);
+    let b1 = na::Vector3::<f64>::new(0.1, 0.2, 0.3);
+    let a1 = (&x * &w1).transpose() + b1;
+    sigmoid(RowDVector::from_row_slice(a1.as_slice()))
+}
+
+fn second_layer(z1: na::RowVector3<f64>) -> na::RowDVector<f64> {
+    let w2 = na::Matrix3x2::<f64>::new(0.1, 0.4, 0.2, 0.5, 0.3, 0.6);
+    let b2 = na::Vector2::<f64>::new(0.1, 0.2);
+    let a2 = (&z1 * &w2).transpose() + b2;
+    sigmoid(RowDVector::from_row_slice(a2.as_slice()))
+}
+
+fn output_layer(z2: na::RowVector2<f64>) -> na::RowDVector<f64> {
+    let w3 = na::Matrix2::<f64>::new(0.1, 0.3, 0.2, 0.4);
+    let b3 = na::Vector2::<f64>::new(0.1, 0.2);
+    let a3 = (&z2 * &w3).transpose() + b3;
+    identity_fucntion(RowDVector::from_row_slice(a3.as_slice()))
 }
 
 #[test]
