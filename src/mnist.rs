@@ -101,7 +101,9 @@ pub fn load_image_as_normalised(file_name: &str, dataset_dir: &Path) -> Normalis
 
 pub fn init_mnist() {
     let dataset_dir = std::env::current_dir().unwrap().join("dataset");
-    KEY_FILE.iter().for_each(|(_, v)| download(v, &dataset_dir));
+    KEY_FILE
+        .iter()
+        .for_each(|(_, v)| download(&format!("{}.gz", v), &dataset_dir));
     decode_gzip_files(&dataset_dir);
 }
 
