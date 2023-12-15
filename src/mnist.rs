@@ -1,20 +1,40 @@
 use std::{
     fs::{self, File},
     io::{BufReader, BufWriter, Read, Write},
-    path::Path,
+    path::{Path, PathBuf},
 };
 
 use flate2::bufread::GzDecoder;
-use nalgebra::{Const, DMatrix, Dyn, Scalar};
+use nalgebra::{Const, Dyn, Scalar};
 use reqwest::header::USER_AGENT;
 
 const URL_BASE: &str = "http://yann.lecun.com/exdb/mnist/";
-const KEY_FILE: [(&str, &str); 4] = [
-    ("train_img", "train-images-idx3-ubyte"),
-    ("train_label", "train-labels-idx1-ubyte"),
-    ("test_img", "t10k-images-idx3-ubyte"),
-    ("test_label", "t10k-labels-idx1-ubyte"),
-];
+pub enum DatasetType {
+    TrainImg,
+    TrainLabel,
+    TestImg,
+    TestLabel,
+}
+
+impl DatasetType {
+    pub fn file_name(&self) -> String {
+        match self {
+            DatasetType::TrainImg => "train-images-idx3-ubyte",
+            DatasetType::TrainLabel => "train-labels-idx1-ubyte",
+            DatasetType::TestImg => "t10k-images-idx3-ubyte",
+            DatasetType::TestLabel => "t10k-labels-idx1-ubyte",
+        }
+        .to_string()
+    }
+    fn values() -> Vec<DatasetType> {
+        vec![
+            DatasetType::TrainImg,
+            DatasetType::TrainLabel,
+            DatasetType::TestImg,
+            DatasetType::TestLabel,
+        ]
+    }
+}
 
 pub type ImageVec = ImageBase<u8>;
 pub type NormalisedImageVec = ImageBase<f32>;
@@ -24,7 +44,7 @@ pub struct ImageBase<T: Clone + Scalar> {
 }
 
 pub struct Label {
-    label: Vec<u8>,
+    pub label: Vec<u8>,
 }
 
 impl<T: Clone + Copy + Scalar> ImageBase<T> {
@@ -38,8 +58,8 @@ impl<T: Clone + Copy + Scalar> ImageBase<T> {
 }
 
 impl Label {
-    pub fn as_one_hot(&self) -> DMatrix<u8> {
-        let mut a = DMatrix::<u8>::zeros(self.label.len(), 10);
+    pub fn as_one_hot(&self) -> na::OMatrix<u8, Dyn, na::Const<10>> {
+        let mut a = na::OMatrix::<u8, Dyn, Const<10>>::zeros(self.label.len());
         a.row_iter_mut()
             .enumerate()
             .for_each(|(i, mut row)| row[self.label[i] as usize] = 1u8);
@@ -88,7 +108,7 @@ pub fn load_image(file_name: &str, dataset_dir: &Path) -> ImageVec {
     vec.into()
 }
 
-pub fn load_image_as_normalised(file_name: &str, dataset_dir: &Path) -> NormalisedImageVec {
+pub fn load_normalised_image(file_name: &str, dataset_dir: &Path) -> NormalisedImageVec {
     let x = load_image(file_name, dataset_dir);
     let mut vec: Vec<na::OMatrix<f32, Const<28>, Const<28>>> = vec![];
     x.as_ref().iter().for_each(|t| -> () {
@@ -99,12 +119,13 @@ pub fn load_image_as_normalised(file_name: &str, dataset_dir: &Path) -> Normalis
     vec.into()
 }
 
-pub fn init_mnist() {
+pub fn init_mnist() -> PathBuf {
     let dataset_dir = std::env::current_dir().unwrap().join("dataset");
-    KEY_FILE
+    DatasetType::values()
         .iter()
-        .for_each(|(_, v)| download(&format!("{}.gz", v), &dataset_dir));
+        .for_each(|v| download(&format!("{}.gz", v.file_name()), &dataset_dir));
     decode_gzip_files(&dataset_dir);
+    dataset_dir
 }
 
 fn download(file_name: &str, dataset_dir: &Path) {
@@ -221,4 +242,10 @@ fn aaa() {
 #[test]
 fn test_init_mnist() {
     init_mnist();
+}
+
+#[test]
+fn test_as_one_hot() {
+    let label = Label::from(vec![2, 8, 2]);
+    let one_hot = label.as_one_hot();
 }
