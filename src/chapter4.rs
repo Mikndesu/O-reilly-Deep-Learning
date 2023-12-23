@@ -3,6 +3,17 @@ use na::{DVector, Dyn};
 use nalgebra as na;
 use rand::seq::IteratorRandom;
 
+fn gradient_descent(f: fn(&na::DVector<f64>) -> f64, init_x: na::DVector<f64>) -> na::DVector<f64> {
+    let mut x = init_x.clone();
+    let lr = 0.1;
+    for _ in 0..100 {
+        let mut grad = numerical_gradient(f, &mut x);
+        grad.apply(|t| *t *= lr);
+        x = x - grad;
+    }
+    x
+}
+
 fn numerical_diff(f: fn(f64) -> f64, x: f64) -> f64 {
     let h = 1e-4;
     (f(x + h) - f(x - h)) / (2 as f64 * h)
@@ -10,7 +21,7 @@ fn numerical_diff(f: fn(f64) -> f64, x: f64) -> f64 {
 
 fn numerical_gradient(
     f: fn(&na::DVector<f64>) -> f64,
-    mut x: na::DVector<f64>,
+    x: &mut na::DVector<f64>,
 ) -> na::DVector<f64> {
     let h = 1e-4;
     let length = x.shape().0;
@@ -114,6 +125,15 @@ fn test_numerical_gradient() {
     }
     dbg!(numerical_gradient(
         funtion_2,
-        DVector::from_vec(vec![3.0, 4.0])
+        &mut DVector::from_vec(vec![3.0, 4.0])
     ));
+}
+
+#[test]
+fn test_gradient_descent() {
+    fn funtion_2(x: &na::DVector<f64>) -> f64 {
+        x[0].powi(2) + x[1].powi(2)
+    }
+    let init_x = DVector::from_vec(vec![-3.0, 4.0]);
+    dbg!(gradient_descent(funtion_2, init_x));
 }
