@@ -1,12 +1,12 @@
+extern crate nalgebra as na;
+use flate2::bufread::GzDecoder;
+use nalgebra::{Const, Dyn, Scalar};
+use reqwest::header::USER_AGENT;
 use std::{
     fs::{self, File},
     io::{BufReader, BufWriter, Read, Write},
     path::{Path, PathBuf},
 };
-
-use flate2::bufread::GzDecoder;
-use nalgebra::{Const, Dyn, Scalar};
-use reqwest::header::USER_AGENT;
 
 const URL_BASE: &str = "http://yann.lecun.com/exdb/mnist/";
 pub enum DatasetType {

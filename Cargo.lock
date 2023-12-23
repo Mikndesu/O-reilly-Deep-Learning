@@ -857,6 +857,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "mylib"
+version = "0.1.0"
+dependencies = [
+ "flate2",
+ "nalgebra",
+ "reqwest",
+]
+
+[[package]]
 name = "nalgebra"
 version = "0.32.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1013,12 +1022,11 @@ dependencies = [
 name = "oreilly_deep_learning"
 version = "0.1.0"
 dependencies = [
- "flate2",
  "image",
+ "mylib",
  "nalgebra",
  "plotters",
  "rand",
- "reqwest",
 ]
 
 [[package]]

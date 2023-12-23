@@ -1,3 +1,4 @@
+extern crate nalgebra as na;
 use nalgebra::RowDVector;
 use plotters::{
     backend::BitMapBackend,
@@ -185,3 +186,5 @@ fn test_relu() {
 fn test_forward() {
     forward();
 }
+
+fn main() {}

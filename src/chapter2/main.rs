@@ -1,3 +1,5 @@
+extern crate nalgebra as na;
+
 fn and(x1: f64, x2: f64) -> i32 {
     let x = na::Vector2::new(x1, x2);
     let w = na::Vector2::new(0.5, 0.5);
@@ -57,3 +59,5 @@ fn test_xor() {
     assert_eq!(xor(0.into(), 1.into()), 1);
     assert_eq!(xor(0.into(), 0.into()), 0);
 }
+
+fn main() {}

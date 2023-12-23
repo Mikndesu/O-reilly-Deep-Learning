@@ -1,6 +1,7 @@
-use crate::mnist::{self, load_normalised_image, Label, NormalisedImageVec};
+extern crate mylib as lib;
+extern crate nalgebra as na;
+use lib::mnist::{self, load_normalised_image, Label, NormalisedImageVec};
 use na::{DVector, Dyn};
-use nalgebra as na;
 use rand::seq::IteratorRandom;
 
 fn gradient_descent(f: fn(&na::DVector<f64>) -> f64, init_x: na::DVector<f64>) -> na::DVector<f64> {
@@ -137,3 +138,5 @@ fn test_gradient_descent() {
     let init_x = DVector::from_vec(vec![-3.0, 4.0]);
     dbg!(gradient_descent(funtion_2, init_x));
 }
+
+fn main() {}
