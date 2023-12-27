@@ -868,6 +868,8 @@ version = "0.1.0"
 dependencies = [
  "flate2",
  "nalgebra",
+ "rand",
+ "rand_distr",
  "reqwest",
 ]
 
