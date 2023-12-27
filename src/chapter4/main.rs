@@ -1,6 +1,7 @@
-extern crate mylib as lib;
+mod simple_net;
+
 extern crate nalgebra as na;
-use lib::mnist::{self, load_normalised_image, Label, NormalisedImageVec};
+use mylib::mnist::{self, load_normalised_image, Label, NormalisedImageVec};
 use na::{DVector, Dyn};
 use rand::seq::IteratorRandom;
 

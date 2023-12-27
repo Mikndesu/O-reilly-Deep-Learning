@@ -1,6 +1,6 @@
 use nalgebra::Const;
 
-use crate::mnist;
+use mylib::mnist;
 
 fn img_show() {
     let dataset_dir = std::env::current_dir().unwrap().join("dataset");

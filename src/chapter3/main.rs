@@ -1,3 +1,5 @@
+mod show_mnist;
+
 extern crate nalgebra as na;
 use nalgebra::RowDVector;
 use plotters::{
