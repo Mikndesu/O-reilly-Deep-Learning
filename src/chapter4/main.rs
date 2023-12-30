@@ -1,8 +1,9 @@
 mod simple_net;
+mod two_layer_net;
 
 extern crate nalgebra as na;
 use mylib::mnist::{self, load_normalised_image, Label, NormalisedImageVec};
-use na::{DVector, Dyn};
+use na::{DVector, Dyn, OMatrix};
 use rand::seq::IteratorRandom;
 
 fn gradient_descent(f: fn(&na::DVector<f64>) -> f64, init_x: na::DVector<f64>) -> na::DVector<f64> {
