@@ -17,6 +17,10 @@ path = "src/chapter3/main.rs"
 name = "oreilly_deep_learning_chapter4"
 path = "src/chapter4/main.rs"
 
+[[bin]]
+name = "oreilly_deep_learning_chapter5"
+path = "src/chapter5/main.rs"
+
 [dependencies]
 mylib = { path = "mylib" }
 image = "0.24.7"
