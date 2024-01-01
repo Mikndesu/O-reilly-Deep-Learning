@@ -5,8 +5,9 @@ use mylib::mnist;
 fn img_show() {
     let dataset_dir = std::env::current_dir().unwrap().join("dataset");
     mnist::init_mnist();
-    let train_img_flattened = mnist::load_image("train-images-idx3-ubyte", &dataset_dir).flatten();
-    let train_img_label = mnist::load_label("train-labels-idx1-ubyte", &dataset_dir);
+    let train_img_flattened =
+        mnist::load_image(mnist::DatasetType::TrainImg, &dataset_dir).flatten();
+    let train_img_label = mnist::load_label(mnist::DatasetType::TestLabel, &dataset_dir);
     // println!("{:?}", train_img_label.shape());
     save_img_from_matrix(
         train_img_flattened

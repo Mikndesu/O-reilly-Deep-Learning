@@ -22,23 +22,23 @@ macro_rules! numerical_gradient_loss {
     }};
 }
 
-struct TwoLayerNet {
-    params: Params,
-    grads: Grads,
+pub struct TwoLayerNet {
+    pub params: Params,
+    pub grads: Grads,
 }
 
-struct Grads {
-    d_w1: na::DMatrix<f64>,
-    d_b1: na::DVector<f64>,
-    d_w2: na::DMatrix<f64>,
-    d_b2: na::DVector<f64>,
+pub struct Grads {
+    pub d_w1: na::DMatrix<f64>,
+    pub d_b1: na::DVector<f64>,
+    pub d_w2: na::DMatrix<f64>,
+    pub d_b2: na::DVector<f64>,
 }
 
-struct Params {
-    w1: na::DMatrix<f64>,
-    b1: na::DVector<f64>,
-    w2: na::DMatrix<f64>,
-    b2: na::DVector<f64>,
+pub struct Params {
+    pub w1: na::DMatrix<f64>,
+    pub b1: na::DVector<f64>,
+    pub w2: na::DMatrix<f64>,
+    pub b2: na::DVector<f64>,
 }
 
 impl Params {
@@ -74,11 +74,8 @@ impl Grads {
 }
 
 impl TwoLayerNet {
-    pub fn new() -> Self {
+    pub fn new(input_size: usize, hidden_size: usize, output_size: usize) -> Self {
         let weight_init_std = 0.01;
-        let input_size = 784;
-        let hidden_size = 100;
-        let output_size = 10;
         Self {
             params: Params::new(weight_init_std, input_size, hidden_size, output_size),
             grads: Grads::new(input_size, hidden_size, output_size),
@@ -89,7 +86,7 @@ impl TwoLayerNet {
         let (w1, w2) = (&self.params.w1, &self.params.w2);
         let (b1, b2) = (&self.params.b1, &self.params.b2);
         let mut a1 = x * w1;
-        a1.column_iter_mut().for_each(|mut t| t += b1);
+        a1.row_iter_mut().for_each(|mut t| t += b1.transpose());
         let z1 = sigmoid(&a1);
         let mut a2 = z1 * w2;
         a2.row_iter_mut().for_each(|mut t| t += b2.transpose());
@@ -97,12 +94,12 @@ impl TwoLayerNet {
         y
     }
 
-    fn loss(&self, x: &na::DMatrix<f64>, t: &na::DMatrix<u8>) -> f64 {
+    pub fn loss(&self, x: &na::DMatrix<f64>, t: &na::DMatrix<u8>) -> f64 {
         let y = self.predict(x);
         cross_entropy_error(&y, t)
     }
 
-    fn accuracy(&self, x: &na::DMatrix<f64>, t: &na::DMatrix<u8>) -> f64 {
+    pub fn accuracy(&self, x: &na::DMatrix<f64>, t: &na::DMatrix<u8>) -> f64 {
         let y = self.predict(x);
         fn max_index_by_column<T>(matrix: &na::DMatrix<T>) -> Vec<(usize, usize)>
         where
@@ -121,9 +118,9 @@ impl TwoLayerNet {
         let t_max: Vec<(usize, usize)> = max_index_by_column(t);
         let result = y_max
             .iter()
-            .zip(t_max)
+            .zip(t_max.iter())
             .map(|(_y, _t)| -> i32 {
-                if *_y == _t {
+                if _y == _t {
                     1
                 } else {
                     0
@@ -132,10 +129,11 @@ impl TwoLayerNet {
             .collect::<Vec<i32>>()
             .iter()
             .sum::<i32>();
-        (result / x.shape().0 as i32).into()
+        (result as f64 / y.shape().0 as f64).into()
     }
 
-    fn numerical_gradient(&mut self, x: &na::DMatrix<f64>, t: &na::DMatrix<u8>) {
+    // x.shape should be (n, 784) and as well t.shape (n, 10)
+    pub fn numerical_gradient(&mut self, x: &na::DMatrix<f64>, t: &na::DMatrix<u8>) {
         self.grads.d_w1 = numerical_gradient_loss!(self, &x, &t, w1);
         self.grads.d_b1 = numerical_gradient_loss!(self, &x, &t, b1);
         self.grads.d_w2 = numerical_gradient_loss!(self, &x, &t, w2);

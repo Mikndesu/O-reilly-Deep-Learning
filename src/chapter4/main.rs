@@ -1,4 +1,5 @@
 mod simple_net;
+mod train_neural_net;
 mod two_layer_net;
 
 extern crate nalgebra as na;
@@ -74,7 +75,7 @@ fn cross_entropy_error_from_label(y: na::OMatrix<f64, Dyn, na::Const<10>>, t: La
 fn mini_batch() -> Vec<usize> {
     let dataset_dir = mnist::init_mnist();
     let train_img: NormalisedImageVec =
-        load_normalised_image(&mnist::DatasetType::TrainImg.file_name(), &dataset_dir);
+        load_normalised_image(mnist::DatasetType::TrainImg, &dataset_dir);
     let batch_size = 10;
     let batch_mask =
         (0..train_img.as_ref().len()).choose_multiple(&mut rand::thread_rng(), batch_size);
@@ -141,4 +142,6 @@ fn test_gradient_descent() {
     dbg!(gradient_descent(funtion_2, init_x));
 }
 
-fn main() {}
+fn main() {
+    train_neural_net::train_neural_net();
+}

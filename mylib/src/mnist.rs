@@ -37,7 +37,7 @@ impl DatasetType {
 }
 
 pub type ImageVec = ImageBase<u8>;
-pub type NormalisedImageVec = ImageBase<f32>;
+pub type NormalisedImageVec = ImageBase<f64>;
 
 pub struct ImageBase<T: Clone + Scalar> {
     image_vec: Vec<na::OMatrix<T, Const<28>, Const<28>>>,
@@ -48,12 +48,12 @@ pub struct Label {
 }
 
 impl<T: Clone + Copy + Scalar> ImageBase<T> {
-    pub fn flatten(&self) -> na::OMatrix<T, Const<784>, Dyn> {
+    pub fn flatten(&self) -> na::OMatrix<T, Dyn, Const<784>> {
         let mut vec: Vec<T> = vec![];
         self.image_vec
             .iter()
             .for_each(|x| x.iter().for_each(|y| vec.push(*y)));
-        na::OMatrix::<T, Const<784>, Dyn>::from_vec(vec)
+        na::OMatrix::<T, Dyn, Const<784>>::from_vec(vec)
     }
 }
 
@@ -91,15 +91,15 @@ impl AsRef<Vec<u8>> for Label {
     }
 }
 
-pub fn load_label(file_name: &str, dataset_dir: &Path) -> Label {
-    let mut buf_reader = load(file_name, dataset_dir, 8);
+pub fn load_label(_type: DatasetType, dataset_dir: &Path) -> Label {
+    let mut buf_reader = load(&DatasetType::file_name(&_type), dataset_dir, 8);
     let mut buf: Vec<u8> = vec![];
     let _ = buf_reader.read_to_end(&mut buf);
     buf.into()
 }
 
-pub fn load_image(file_name: &str, dataset_dir: &Path) -> ImageVec {
-    let mut buf_reader = load(file_name, dataset_dir, 16);
+pub fn load_image(_type: DatasetType, dataset_dir: &Path) -> ImageVec {
+    let mut buf_reader = load(&DatasetType::file_name(&_type), dataset_dir, 16);
     let mut vec: Vec<na::OMatrix<u8, Const<28>, Const<28>>> = vec![];
     while let Ok(buf) = read_exact_bytes(&mut buf_reader, 784) {
         let matrix = na::OMatrix::<u8, Const<28>, Const<28>>::from_vec(buf);
@@ -108,11 +108,11 @@ pub fn load_image(file_name: &str, dataset_dir: &Path) -> ImageVec {
     vec.into()
 }
 
-pub fn load_normalised_image(file_name: &str, dataset_dir: &Path) -> NormalisedImageVec {
-    let x = load_image(file_name, dataset_dir);
-    let mut vec: Vec<na::OMatrix<f32, Const<28>, Const<28>>> = vec![];
+pub fn load_normalised_image(_type: DatasetType, dataset_dir: &Path) -> NormalisedImageVec {
+    let x = load_image(_type, dataset_dir);
+    let mut vec: Vec<na::OMatrix<f64, Const<28>, Const<28>>> = vec![];
     x.as_ref().iter().for_each(|t| -> () {
-        let mut matrix = t.cast::<f32>();
+        let mut matrix = t.cast::<f64>();
         matrix.apply(|t| *t /= 255.0);
         vec.push(matrix);
     });
