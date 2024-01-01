@@ -18,6 +18,7 @@ pub fn train_neural_net() {
     let test_img = load_normalised_image(DatasetType::TestImg, &dataset_dir).flatten();
     let test_label = load_label(DatasetType::TestLabel, &dataset_dir).as_one_hot();
     let mut network = two_layer_net::TwoLayerNet::new(784, 50, 10);
+    let mut rng = rand::thread_rng();
     let iters_num = 1800;
     let train_size = train_img.shape().0;
     let batch_size = 600;
@@ -26,11 +27,11 @@ pub fn train_neural_net() {
     let mut train_accuracy_list = vec![];
     let mut test_accuracy_list = vec![];
     let iter_per_epoch = 1.max(train_size / batch_size);
+    let mut img_batch = na::DMatrix::<f64>::zeros(batch_size, 784);
+    let mut label_batch = na::DMatrix::<u8>::zeros(batch_size, 10);
     for i in 0..iters_num {
         println!("Now {} times iteration has finished", i);
-        let batch_mask = (0..train_size).choose_multiple(&mut rand::thread_rng(), batch_size);
-        let mut img_batch = na::DMatrix::<f64>::zeros(batch_mask.len(), 784);
-        let mut label_batch = na::DMatrix::<u8>::zeros(batch_mask.len(), 10);
+        let batch_mask = (0..train_size).choose_multiple(&mut rng, batch_size);
         img_batch
             .row_iter_mut()
             .zip(batch_mask.iter())
@@ -46,7 +47,7 @@ pub fn train_neural_net() {
         network.params.b2 -= learning_rate * &network.grads.d_b2;
         let loss = network.loss(&img_batch, &label_batch);
         train_loss_list.push(loss);
-        if i % iter_per_epoch == 0 {
+        if (i + 1) % iter_per_epoch == 0 {
             let train_acc = network.accuracy(
                 &train_img
                     .clone()
