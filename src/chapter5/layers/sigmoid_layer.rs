@@ -1,0 +1,50 @@
+struct Sigmoid {
+    out: na::DMatrix<f64>,
+}
+
+impl Sigmoid {
+    pub fn new() -> Self {
+        Self {
+            out: na::DMatrix::<f64>::from_element(0, 0, 0.0),
+        }
+    }
+
+    pub fn forwards(&mut self, x: &na::DMatrix<f64>) -> na::DMatrix<f64> {
+        self.out = x.clone();
+        self.out.apply(|a| *a = 1.0 / (1.0 + (-*a).exp()));
+        self.out.clone()
+    }
+
+    pub fn backwards(&self, dout: &na::DMatrix<f64>) -> na::DMatrix<f64> {
+        let mut tmp = self.out.clone();
+        for i in 0..tmp.shape().0 {
+            for j in 0..tmp.shape().1 {
+                let index = (i, j);
+                tmp[index] = dout[index] * (1.0 - self.out[index]) * self.out[index];
+            }
+        }
+        tmp
+    }
+}
+
+#[test]
+fn test_sigmoid() {
+    let mut sigmoid_layer = Sigmoid::new();
+    let mut out = sigmoid_layer.forwards(&na::DMatrix::<f64>::from_vec(
+        2,
+        2,
+        vec![1.0, 0.0, -0.5, 3.0],
+    ));
+    out.apply(|x| *x = (*x * 1000.0).round() / 1000.0);
+    assert_eq!(
+        out,
+        na::DMatrix::<f64>::from_vec(2, 2, vec![0.731, 0.5, 0.378, 0.953])
+    );
+    let dy = na::DMatrix::<f64>::from_element(2, 2, 1.0);
+    let mut out = sigmoid_layer.backwards(&dy);
+    out.apply(|x| *x = (*x * 1000.0).round() / 1000.0);
+    assert_eq!(
+        out,
+        na::DMatrix::<f64>::from_vec(2, 2, vec![0.197, 0.250, 0.235, 0.045])
+    );
+}
