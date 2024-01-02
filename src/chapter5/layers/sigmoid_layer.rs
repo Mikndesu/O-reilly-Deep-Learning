@@ -17,13 +17,8 @@ impl Sigmoid {
 
     pub fn backwards(&self, dout: &na::DMatrix<f64>) -> na::DMatrix<f64> {
         let mut tmp = self.out.clone();
-        for i in 0..tmp.shape().0 {
-            for j in 0..tmp.shape().1 {
-                let index = (i, j);
-                tmp[index] = dout[index] * (1.0 - self.out[index]) * self.out[index];
-            }
-        }
-        tmp
+        tmp.apply(|a| *a = 1.0 - *a);
+        dout.component_mul(&self.out).component_mul(&tmp)
     }
 }
 
