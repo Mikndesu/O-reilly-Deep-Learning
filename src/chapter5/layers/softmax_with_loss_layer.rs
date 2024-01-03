@@ -1,4 +1,4 @@
-struct SoftmaxWithLoss {
+pub struct SoftmaxWithLoss {
     y: na::DMatrix<f64>,
     t: na::DMatrix<u8>,
     loss: f64,

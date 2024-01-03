@@ -1,4 +1,4 @@
-struct Affine {
+pub struct Affine {
     w: na::DMatrix<f64>,
     b: na::DVector<f64>,
     x: na::DMatrix<f64>,

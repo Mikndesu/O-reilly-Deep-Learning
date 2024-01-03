@@ -1,4 +1,4 @@
-struct Relu {
+pub struct Relu {
     mask: na::DMatrix<bool>,
 }
 

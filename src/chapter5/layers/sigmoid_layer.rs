@@ -1,4 +1,4 @@
-struct Sigmoid {
+pub struct Sigmoid {
     out: na::DMatrix<f64>,
 }
 
