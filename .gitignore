@@ -2,3 +2,5 @@
 *.png
 /dataset
 .DS_Store
+mylib/target
+mylib/dataset
