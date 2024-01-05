@@ -1,3 +1,5 @@
+use nalgebra::DMatrix;
+
 pub struct SoftmaxWithLoss {
     y: na::DMatrix<f64>,
     t: na::DMatrix<u8>,
@@ -13,8 +15,8 @@ impl SoftmaxWithLoss {
         }
     }
 
-    pub fn forwards(&mut self, x: na::DMatrix<f64>, t: na::DMatrix<u8>) -> f64 {
-        self.t = t;
+    pub fn forwards(&mut self, x: &na::DMatrix<f64>, t: &na::DMatrix<u8>) -> f64 {
+        self.t = t.clone();
         self.y = Self::softmax(&x);
         self.loss = Self::cross_entropy_error(&self.y, &self.t);
         self.loss
@@ -52,4 +54,27 @@ impl SoftmaxWithLoss {
             .sum::<f64>()
             / batch_size
     }
+}
+
+#[test]
+fn test_softmax_with_loss() {
+    let x = na::DMatrix::<f64>::from_row_slice(
+        3,
+        10,
+        &vec![
+            1.0, 3.0, 5.0, 7.0, 9.0, 1.5, 3.5, 5.5, 7.5, 9.5, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+            1.0, 1.0, 1.0, -10.0, -8.0, -6.0, -4.0, -2.0, 0.0, 2.0, 4.0, 6.0, 8.0,
+        ],
+    );
+    let t = na::DMatrix::<u8>::from_row_slice(
+        3,
+        10,
+        &vec![
+            0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            1,
+        ],
+    );
+    let mut net = SoftmaxWithLoss::new();
+    dbg!(net.forwards(&x, &t));
+    dbg!(net.backwards(1.0f64));
 }
