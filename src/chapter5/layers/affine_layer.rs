@@ -13,6 +13,7 @@ pub struct Affine {
 impl Layer for Affine {
     fn forwards(&mut self, x: &na::DMatrix<f64>) -> na::DMatrix<f64> {
         self.x = x.clone();
+        #[allow(non_snake_case)]
         let B = na::DMatrix::<f64>::from_row_slice(
             self.x.nrows(),
             self.b.deref().borrow().nrows(),

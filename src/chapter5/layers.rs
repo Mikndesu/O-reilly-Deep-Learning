@@ -1,5 +1,3 @@
-use self::{affine_layer::Affine, relu_layer::Relu, sigmoid_layer::Sigmoid};
-
 pub mod affine_layer;
 pub mod relu_layer;
 pub mod sigmoid_layer;

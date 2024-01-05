@@ -57,7 +57,7 @@ fn test_relu() {
         relu_layer.mask,
         na::DMatrix::<bool>::from_vec(2, 2, vec![false, true, true, false])
     );
-    let mut dy = na::DMatrix::<f64>::from_element(2, 2, 1.0);
+    let dy = na::DMatrix::<f64>::from_element(2, 2, 1.0);
     assert_eq!(
         relu_layer.backwards(&dy),
         na::DMatrix::<f64>::from_vec(2, 2, vec![1.0, 0.0, 0.0, 1.0])
