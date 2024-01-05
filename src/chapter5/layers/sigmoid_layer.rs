@@ -1,5 +1,21 @@
+use super::Layer;
+
 pub struct Sigmoid {
     out: na::DMatrix<f64>,
+}
+
+impl Layer for Sigmoid {
+    fn forwards(&mut self, x: &na::DMatrix<f64>) -> na::DMatrix<f64> {
+        self.out = x.clone();
+        self.out.apply(|a| *a = 1.0 / (1.0 + (-*a).exp()));
+        self.out.clone()
+    }
+
+    fn backwards(&mut self, dout: &na::DMatrix<f64>) -> na::DMatrix<f64> {
+        let mut tmp = self.out.clone();
+        tmp.apply(|a| *a = 1.0 - *a);
+        dout.component_mul(&self.out).component_mul(&tmp)
+    }
 }
 
 impl Sigmoid {
@@ -7,18 +23,6 @@ impl Sigmoid {
         Self {
             out: na::DMatrix::<f64>::from_element(0, 0, 0.0),
         }
-    }
-
-    pub fn forwards(&mut self, x: &na::DMatrix<f64>) -> na::DMatrix<f64> {
-        self.out = x.clone();
-        self.out.apply(|a| *a = 1.0 / (1.0 + (-*a).exp()));
-        self.out.clone()
-    }
-
-    pub fn backwards(&self, dout: &na::DMatrix<f64>) -> na::DMatrix<f64> {
-        let mut tmp = self.out.clone();
-        tmp.apply(|a| *a = 1.0 - *a);
-        dout.component_mul(&self.out).component_mul(&tmp)
     }
 }
 
