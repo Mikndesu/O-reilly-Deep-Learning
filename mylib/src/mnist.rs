@@ -48,12 +48,12 @@ pub struct Label {
 }
 
 impl<T: Clone + Copy + Scalar> ImageBase<T> {
-    pub fn flatten(&self) -> na::OMatrix<T, Dyn, Const<784>> {
+    pub fn flatten(&self) -> na::OMatrix<T, Const<784>, Dyn> {
         let mut vec: Vec<T> = vec![];
         self.image_vec
             .iter()
             .for_each(|x| x.iter().for_each(|y| vec.push(*y)));
-        na::OMatrix::<T, Dyn, Const<784>>::from_vec(vec)
+        na::OMatrix::<T, Const<784>, Dyn>::from_vec(vec)
     }
 }
 
@@ -215,7 +215,7 @@ fn test() {
         buf_reader.read_exact(&mut buffer).unwrap();
         buffer
     }
-    read_exact_bytes(&mut buf_reader, 16);
+    read_exact_bytes(&mut buf_reader, 800);
     let matrix =
         na::OMatrix::<u8, Const<28>, Const<28>>::from_vec(read_exact_bytes(&mut buf_reader, 784));
     let mut img = image::GrayImage::new(28, 28);
