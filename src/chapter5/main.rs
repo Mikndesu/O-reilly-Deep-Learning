@@ -50,21 +50,21 @@ fn plot_accuracy(train_accuracy_list: &Vec<f64>, test_accuracy_list: &Vec<f64>) 
         .margin(10)
         .x_label_area_size(30)
         .y_label_area_size(30)
-        .build_cartesian_2d(0.0..1.0, 0.0..1.0)
+        .build_cartesian_2d(0.0..(epocn_num as f64), 0.0..1.0)
         .unwrap();
     plot.configure_mesh().draw().unwrap();
     plot.draw_series(LineSeries::new(
-        (0..epocn_num)
-            .into_iter()
-            .zip(train_accuracy_list.iter())
+        train_accuracy_list
+            .iter()
+            .enumerate()
             .map(|(x, y)| (x as f64, *y)),
         &RED,
     ))
     .unwrap();
     plot.draw_series(LineSeries::new(
-        (0..epocn_num)
-            .into_iter()
-            .zip(test_accuracy_list.iter())
+        test_accuracy_list
+            .iter()
+            .enumerate()
             .map(|(x, y)| (x as f64, *y)),
         &BLUE,
     ))
