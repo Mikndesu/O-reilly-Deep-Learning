@@ -1,3 +1,5 @@
+use std::time::Instant;
+
 use plotters::{
     backend::BitMapBackend,
     chart::ChartBuilder,
@@ -12,11 +14,22 @@ mod two_layer_net;
 extern crate nalgebra as na;
 
 fn main() {
+    let start = Instant::now();
     let (train_loss_list, train_accuracy_list, test_accuracy_list) =
         train_neural_net::train_neural_net();
+    let end = start.elapsed();
     println!("Training has finished! Now starting to plot.");
     plot_loss(&train_loss_list);
     plot_accuracy(&train_accuracy_list, &test_accuracy_list);
+    println!(
+        "Training takes {}.{:03}s",
+        end.as_secs(),
+        end.subsec_millis()
+    );
+    println!(
+        "Testdata accuracy is {}",
+        test_accuracy_list.last().unwrap()
+    );
 }
 
 fn plot_loss(train_loss_list: &Vec<f64>) {

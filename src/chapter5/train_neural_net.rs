@@ -22,7 +22,6 @@ pub fn train_neural_net() -> (Vec<f64>, Vec<f64>, Vec<f64>) {
     let iter_per_epoch = 1.max(train_size / batch_size);
     let mut img_batch = na::DMatrix::<f64>::zeros(batch_size, 784);
     let mut label_batch = na::DMatrix::<u8>::zeros(batch_size, 10);
-    dbg!(iter_per_epoch);
     for i in 0..iters_num {
         if i % 100 == 0 {
             println!("Now {} times iteration has finished", i);
