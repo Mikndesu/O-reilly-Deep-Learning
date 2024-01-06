@@ -27,8 +27,8 @@ fn main() {
         end.subsec_millis()
     );
     println!(
-        "Testdata accuracy is {}",
-        test_accuracy_list.last().unwrap()
+        "Testdata accuracy is {}%",
+        test_accuracy_list.last().unwrap() * 100.0
     );
 }
 
