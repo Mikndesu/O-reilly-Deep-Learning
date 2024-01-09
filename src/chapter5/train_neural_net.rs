@@ -69,7 +69,11 @@ pub fn train_neural_net() -> (Vec<f64>, Vec<f64>, Vec<f64>) {
             );
             train_accuracy_list.push(train_acc);
             test_accuracy_list.push(test_acc);
-            println!("Train Acc. {} Test Acc. {}", train_acc, test_acc);
+            println!(
+                "Train Acc. {:.1}% Test Acc. {:.1}%",
+                train_acc * 100.0,
+                test_acc * 100.0
+            );
         }
     }
     (train_loss_list, train_accuracy_list, test_accuracy_list)
