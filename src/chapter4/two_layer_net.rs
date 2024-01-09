@@ -1,3 +1,4 @@
+use mylib::mnist::{self, load_label, load_normalised_image, DatasetType};
 use na::{DMatrix, Scalar};
 use nalgebra as na;
 use rand::Rng;

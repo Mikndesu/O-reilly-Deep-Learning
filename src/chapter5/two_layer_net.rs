@@ -224,8 +224,16 @@ fn gradient_check() {
     let train_label = load_label(DatasetType::TrainLabel, &dataset_dir).as_one_hot();
     let test_img = load_normalised_image(DatasetType::TestImg, &dataset_dir).flatten();
     let test_label = load_label(DatasetType::TestLabel, &dataset_dir).as_one_hot();
-    let img_batch = train_img.rows(0, 2).resize(3, 784, 0.0);
-    let label_batch = train_label.rows(0, 2).resize(3, 10, 0);
+    let mut img_batch = na::DMatrix::<f64>::zeros(3, 784);
+    let mut label_batch = na::DMatrix::<u8>::zeros(3, 10);
+    img_batch
+        .row_iter_mut()
+        .zip((0..3).into_iter())
+        .for_each(|(mut column, n)| column.copy_from_slice(&train_img.column(n).as_slice()));
+    label_batch
+        .row_iter_mut()
+        .zip((0..3).into_iter())
+        .for_each(|(mut column, n)| column.copy_from(&train_label.row(n)));
     network.numerical_gradient(&img_batch, &label_batch);
     let grad_numerical = network.grads.clone();
     network.gradient(&img_batch, &label_batch);
