@@ -2,7 +2,7 @@ use std::{cell::RefCell, rc::Rc};
 
 use multi_layer_net::{grads::Grads, params::Params};
 
-struct SGD {
+pub struct SGD {
     lr: f64,
 }
 

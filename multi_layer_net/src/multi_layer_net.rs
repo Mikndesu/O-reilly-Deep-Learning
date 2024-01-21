@@ -12,19 +12,19 @@ use crate::{
     params::Params,
 };
 
-struct MultiLayer {
+pub struct MultiLayerNet {
     input_size: usize,
     hidden_size_list: Vec<usize>,
     output_size: usize,
     hidden_layer_num: usize,
-    params: Params,
-    grads: Grads,
+    pub params: Rc<RefCell<Params>>,
+    pub grads: Grads,
     layers: Vec<Rc<RefCell<dyn Layer>>>,
     last_layer: SoftmaxWithLoss,
     weight_decay_lambda: f64,
 }
 
-impl MultiLayer {
+impl MultiLayerNet {
     pub fn new(
         input_size: usize,
         hidden_size_list: Vec<usize>,
@@ -34,17 +34,22 @@ impl MultiLayer {
         activation: &str,
     ) -> Self {
         let mut layers: Vec<Rc<RefCell<dyn Layer>>> = vec![];
-        let params = init_weight(input_size, &hidden_size_list, output_size, weight_init_std);
+        let params = Rc::new(RefCell::new(init_weight(
+            input_size,
+            &hidden_size_list,
+            output_size,
+            weight_init_std,
+        )));
         for idx in 0..hidden_size_list.len() {
             layers.push(Rc::new(RefCell::new(Affine::new(
-                params.weight_list[idx].clone(),
-                params.bias_list[idx].clone(),
+                params.borrow().weight_list[idx].clone(),
+                params.borrow().bias_list[idx].clone(),
             ))));
             layers.push(activation_layer(activation));
         }
         layers.push(Rc::new(RefCell::new(Affine::new(
-            params.weight_list[hidden_size_list.len()].clone(),
-            params.bias_list[hidden_size_list.len()].clone(),
+            params.borrow().weight_list[hidden_size_list.len()].clone(),
+            params.borrow().bias_list[hidden_size_list.len()].clone(),
         ))));
         Self {
             input_size,
@@ -71,8 +76,9 @@ impl MultiLayer {
         let y = self.predict(x);
         let mut weight_decay = 0.0;
         for idx in 0..=self.hidden_layer_num {
-            let w = &*self.params.weight_list[idx].borrow();
-            weight_decay += 0.5 * self.weight_decay_lambda * w.norm();
+            weight_decay += 0.5
+                * self.weight_decay_lambda
+                * self.params.borrow().weight_list[idx].borrow().norm();
         }
         self.last_layer.forwards(&y, t) + weight_decay
     }
