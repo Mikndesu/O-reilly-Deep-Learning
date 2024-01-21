@@ -1,6 +1,5 @@
-use paste::paste;
+use multi_layer_net::{grads::Grads, params::Params};
 use std::{cell::RefCell, rc::Rc};
-use two_layer_net::two_layer_net::{Grads, Params};
 
 struct AdaGrad {
     lr: f64,
@@ -8,19 +7,20 @@ struct AdaGrad {
 }
 
 struct H {
-    w1: na::DMatrix<f64>,
-    b1: na::DVector<f64>,
-    w2: na::DMatrix<f64>,
-    b2: na::DVector<f64>,
+    weight_list: Vec<na::DMatrix<f64>>,
+    bias_list: Vec<na::DVector<f64>>,
 }
 
 impl H {
     fn new() -> Self {
+        let weight_list = vec![
+            na::DMatrix::<f64>::zeros(0, 0),
+            na::DMatrix::<f64>::zeros(0, 0),
+        ];
+        let bias_list = vec![na::DVector::<f64>::zeros(0), na::DVector::<f64>::zeros(0)];
         Self {
-            w1: na::DMatrix::<f64>::zeros(0, 0),
-            b1: na::DVector::<f64>::zeros(0),
-            w2: na::DMatrix::<f64>::zeros(0, 0),
-            b2: na::DVector::<f64>::zeros(0),
+            weight_list,
+            bias_list,
         }
     }
 }
@@ -31,25 +31,43 @@ impl AdaGrad {
     }
 
     pub fn update(&mut self, params: &Rc<RefCell<Params>>, grads: &Grads) {
-        if self.h.w1.nrows() == 0 {
-            self.h.w1 = na::DMatrix::<f64>::zeros(grads.d_w1.nrows(), grads.d_w1.ncols());
-            self.h.w2 = na::DMatrix::<f64>::zeros(grads.d_w2.nrows(), grads.d_w2.ncols());
-            self.h.b1 = na::DVector::<f64>::zeros(grads.d_b1.nrows());
-            self.h.b2 = na::DVector::<f64>::zeros(grads.d_b2.nrows());
+        if self.h.weight_list[0].nrows() == 0 {
+            self.h
+                .weight_list
+                .iter_mut()
+                .enumerate()
+                .for_each(|(i, m)| m.copy_from(&*grads.d_weight_list[i].borrow()));
+            self.h
+                .bias_list
+                .iter_mut()
+                .enumerate()
+                .for_each(|(i, v)| v.copy_from(&*grads.d_bias_list[i].borrow()));
         }
-        macro_rules! ada_grad_update {
-            ($elm:ident) => {
-                paste! {
-                    self.h.$elm += &grads.[<d_ $elm>].component_mul(&grads.[<d_ $elm>]);
-                    let mut tmp = self.h.$elm.clone();
-                    tmp.apply(|a| *a = a.sqrt() + 1e7);
-                    *params.borrow_mut().$elm.borrow_mut() -= self.lr * &grads.[<d_ $elm>].component_div(&tmp);
-                }
-            };
+        self.h
+            .weight_list
+            .iter_mut()
+            .enumerate()
+            .for_each(|(i, m)| {
+                *m = grads.d_weight_list[i]
+                    .borrow()
+                    .component_mul(&*grads.d_weight_list[i].borrow());
+            });
+        for (i, m) in self.h.weight_list.iter().enumerate() {
+            let mut tmp = m.clone();
+            tmp.apply(|a| *a = a.sqrt() + 1e7);
+            *params.borrow_mut().weight_list[i].borrow_mut() -=
+                self.lr * &grads.d_weight_list[i].borrow_mut().component_div(&tmp);
         }
-        ada_grad_update!(w1);
-        ada_grad_update!(b1);
-        ada_grad_update!(w2);
-        ada_grad_update!(b2);
+        self.h.bias_list.iter_mut().enumerate().for_each(|(i, m)| {
+            *m = grads.d_bias_list[i]
+                .borrow()
+                .component_mul(&*grads.d_bias_list[i].borrow())
+        });
+        for (i, m) in self.h.bias_list.iter().enumerate() {
+            let mut tmp = m.clone();
+            tmp.apply(|a| *a = a.sqrt() + 1e7);
+            *params.borrow_mut().bias_list[i].borrow_mut() -=
+                self.lr * &grads.d_bias_list[i].borrow_mut().component_div(&tmp);
+        }
     }
 }

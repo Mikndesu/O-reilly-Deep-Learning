@@ -1,6 +1,5 @@
-use paste::paste;
+use multi_layer_net::{grads::Grads, params::Params};
 use std::{cell::RefCell, rc::Rc};
-use two_layer_net::two_layer_net::{Grads, Params};
 
 struct Momentum {
     lr: f64,
@@ -9,10 +8,8 @@ struct Momentum {
 }
 
 struct V {
-    v_w1: na::DMatrix<f64>,
-    v_b1: na::DVector<f64>,
-    v_w2: na::DMatrix<f64>,
-    v_b2: na::DVector<f64>,
+    v_weight_list: Vec<na::DMatrix<f64>>,
+    v_bias_list: Vec<na::DVector<f64>>,
 }
 
 impl Momentum {
@@ -25,34 +22,51 @@ impl Momentum {
     }
 
     pub fn update(&mut self, params: &Rc<RefCell<Params>>, grads: &Grads) {
-        if self.v.v_w1.nrows() == 0 {
-            self.v.v_w1 = na::DMatrix::<f64>::zeros(grads.d_w1.nrows(), grads.d_w1.ncols());
-            self.v.v_w2 = na::DMatrix::<f64>::zeros(grads.d_w2.nrows(), grads.d_w2.ncols());
-            self.v.v_b1 = na::DVector::<f64>::zeros(grads.d_b1.nrows());
-            self.v.v_b2 = na::DVector::<f64>::zeros(grads.d_b2.nrows());
+        if self.v.v_weight_list[0].nrows() == 0 {
+            self.v
+                .v_weight_list
+                .iter_mut()
+                .enumerate()
+                .for_each(|(i, m)| m.copy_from(&grads.d_bias_list[i].borrow()));
+            self.v
+                .v_bias_list
+                .iter_mut()
+                .enumerate()
+                .for_each(|(i, v)| v.copy_from(&grads.d_bias_list[i].borrow()));
         }
-        macro_rules! momentum_update {
-            ($elm:ident) => {
-                paste!{
-                    self.v.[<v_ $elm>] = self.momentum * &self.v.[<v_ $elm>] - self.lr * &grads.[<d_ $elm>];
-                    *params.borrow_mut().$elm.borrow_mut() += &self.v.[<v_ $elm>];
-                }
-            };
+        self.v
+            .v_weight_list
+            .iter_mut()
+            .enumerate()
+            .for_each(|(i, m)| {
+                *m = self.momentum * &*m - self.lr * &*grads.d_weight_list[i].borrow()
+            });
+        for (i, _) in self.v.v_weight_list.iter().enumerate() {
+            *params.borrow_mut().weight_list[i].borrow_mut() += &self.v.v_weight_list[i];
         }
-        momentum_update!(w1);
-        momentum_update!(b1);
-        momentum_update!(w2);
-        momentum_update!(b2);
+        self.v
+            .v_bias_list
+            .iter_mut()
+            .enumerate()
+            .for_each(|(i, m)| {
+                *m = self.momentum * &*m - self.lr * &*grads.d_bias_list[i].borrow()
+            });
+        for (i, _) in self.v.v_bias_list.iter().enumerate() {
+            *params.borrow_mut().bias_list[i].borrow_mut() += &self.v.v_bias_list[i];
+        }
     }
 }
 
 impl V {
     fn new() -> Self {
+        let v_weight_list = vec![
+            na::DMatrix::<f64>::zeros(0, 0),
+            na::DMatrix::<f64>::zeros(0, 0),
+        ];
+        let v_bias_list = vec![na::DVector::<f64>::zeros(0), na::DVector::<f64>::zeros(0)];
         Self {
-            v_w1: na::DMatrix::<f64>::zeros(0, 0),
-            v_b1: na::DVector::<f64>::zeros(0),
-            v_w2: na::DMatrix::<f64>::zeros(0, 0),
-            v_b2: na::DVector::<f64>::zeros(0),
+            v_weight_list,
+            v_bias_list,
         }
     }
 }
