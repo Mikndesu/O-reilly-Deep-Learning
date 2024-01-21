@@ -27,10 +27,11 @@ path = "src/chapter6/main.rs"
 
 [dependencies]
 mylib = { path = "mylib" }
-two_layer_net = { path = "two_layer_net" }
+multi_layer_net = { path = "multi_layer_net" }
 image = "0.24.7"
 nalgebra = "0.32.3"
 plotters = "0.3.1"
 rand = "0.8.5"
 rand_distr = "0.4.3"
 paste = "1.0.14"
+mopa = "0.2.2"
