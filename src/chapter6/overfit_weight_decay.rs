@@ -45,7 +45,7 @@ pub fn train() -> (Vec<f64>, Vec<f64>, Vec<f64>) {
         optimiser.update(&network.params, &network.grads);
         let loss = network.loss(&img_batch, &label_batch);
         train_loss_list.push(loss);
-        if i == 0 || (i + 1) % iter_per_epoch as i32 == 0 {
+        if i == 0 || (i + 1) % (iter_per_epoch as i32) == 0 {
             let mut img_matrix = na::DMatrix::<f64>::from_element(train_img.ncols(), 784, 0.0);
             img_matrix
                 .row_iter_mut()
@@ -72,6 +72,7 @@ pub fn train() -> (Vec<f64>, Vec<f64>, Vec<f64>) {
             );
             train_accuracy_list.push(train_acc);
             test_accuracy_list.push(test_acc);
+            print!("Training has done {} times! ", i + 1);
             println!(
                 "Train Acc. {:.1}% Test Acc. {:.1}%",
                 train_acc * 100.0,
