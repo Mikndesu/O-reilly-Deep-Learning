@@ -7,10 +7,10 @@ pub struct Grads {
 }
 
 impl Grads {
-    pub fn new() -> Self {
+    pub fn new(size: usize) -> Self {
         Self {
-            d_weight_list: vec![],
-            d_bias_list: vec![],
+            d_weight_list: vec![Rc::new(RefCell::new(na::DMatrix::<f64>::zeros(0, 0))); size],
+            d_bias_list: vec![Rc::new(RefCell::new(na::DVector::<f64>::zeros(0))); size],
         }
     }
 }

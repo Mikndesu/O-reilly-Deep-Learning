@@ -51,6 +51,7 @@ impl MultiLayerNet {
             params.borrow().weight_list[hidden_size_list.len()].clone(),
             params.borrow().bias_list[hidden_size_list.len()].clone(),
         ))));
+        let grads = Grads::new(params.borrow().weight_list.len());
         Self {
             input_size,
             output_size,
@@ -60,7 +61,7 @@ impl MultiLayerNet {
             last_layer: SoftmaxWithLoss::new(),
             layers,
             params,
-            grads: Grads::new(),
+            grads,
         }
     }
 
@@ -125,9 +126,10 @@ impl MultiLayerNet {
         for idx in 0..=self.hidden_layer_num {
             match self.layers[idx * 2].borrow().downcast_ref::<Affine>() {
                 Some(affine) => {
-                    *self.grads.d_weight_list[idx].borrow_mut() =
-                        &affine.dw + &*affine.w.borrow() * self.weight_decay_lambda;
-                    *self.grads.d_bias_list[idx].borrow_mut() = affine.db.clone();
+                    self.grads.d_weight_list[idx] = Rc::new(RefCell::new(
+                        &affine.dw + &*affine.w.borrow() * self.weight_decay_lambda,
+                    ));
+                    self.grads.d_bias_list[idx] = Rc::new(RefCell::new(affine.db.clone()));
                 }
                 None => panic!("downcasting could not be performed."),
             }
@@ -151,21 +153,24 @@ fn init_weight(
     output_size: usize,
     weight_init_std: &str,
 ) -> Params {
-    let params = Params::new();
     let mut all_size_list: Vec<usize> = vec![];
     all_size_list.push(input_size);
     all_size_list.extend(hidden_size_list);
     all_size_list.push(output_size);
-    for idx in 0..all_size_list.len() {
+    let mut params = Params::new(all_size_list.len());
+    for idx in 0..all_size_list.len() - 1 {
         let mut scale = 0.0;
         if weight_init_std == "relu" || weight_init_std == "he" {
-            scale = (2.0 / all_size_list[idx - 1] as f64).sqrt();
+            scale = (2.0 / all_size_list[idx] as f64).sqrt();
         } else if weight_init_std == "sigmoid" || weight_init_std == "xavier" {
-            scale = (1.0 / all_size_list[idx - 1] as f64).sqrt();
+            scale = (1.0 / all_size_list[idx] as f64).sqrt();
         }
-        *params.weight_list[idx].borrow_mut() =
-            scale * init_matrix_with_standard_normal(all_size_list[idx - 1], all_size_list[idx]);
-        *params.bias_list[idx].borrow_mut() = na::DVector::<f64>::zeros(all_size_list[idx]);
+        params.weight_list[idx] = Rc::new(RefCell::new(
+            scale * init_matrix_with_standard_normal(all_size_list[idx], all_size_list[idx + 1]),
+        ));
+        params.bias_list[idx] = Rc::new(RefCell::new(na::DVector::<f64>::zeros(
+            all_size_list[idx + 1],
+        )));
     }
     params
 }

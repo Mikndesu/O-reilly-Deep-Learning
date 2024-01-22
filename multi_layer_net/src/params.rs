@@ -6,10 +6,10 @@ pub struct Params {
 }
 
 impl Params {
-    pub fn new() -> Self {
+    pub fn new(size: usize) -> Self {
         Self {
-            weight_list: vec![],
-            bias_list: vec![],
+            weight_list: vec![Rc::new(RefCell::new(na::DMatrix::<f64>::zeros(0, 0))); size],
+            bias_list: vec![Rc::new(RefCell::new(na::DVector::<f64>::zeros(0))); size],
         }
     }
 }
