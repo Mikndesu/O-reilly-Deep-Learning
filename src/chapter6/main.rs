@@ -1,5 +1,4 @@
-use std::time::Instant;
-
+use overfit_weight_decay::overfit_weight_decay_train;
 use plotters::{
     backend::BitMapBackend,
     chart::ChartBuilder,
@@ -15,26 +14,13 @@ pub mod optimiser;
 pub mod overfit_weight_decay;
 
 fn main() {
-    let start = Instant::now();
-    let (train_loss_list, train_accuracy_list, test_accuracy_list) = overfit_weight_decay::train();
-    let end = start.elapsed();
-    println!("Training has finished! Now starting to plot.");
-    plot_loss(&train_loss_list);
-    plot_accuracy(&train_accuracy_list, &test_accuracy_list);
-    println!(
-        "Training takes {}.{:03}s",
-        end.as_secs(),
-        end.subsec_millis()
-    );
-    println!(
-        "Testdata accuracy is {:.1}%",
-        test_accuracy_list.last().unwrap() * 100.0
-    );
+    overfit_weight_decay_train();
 }
 
-fn plot_loss(train_loss_list: &Vec<f64>) {
+fn plot_loss(train_loss_list: &Vec<f64>, plot_name: &str) {
     let iters_num = train_loss_list.len();
-    let root = BitMapBackend::new("Iteration Overfit.png", (640, 480)).into_drawing_area();
+    let name = format!("{}.png", plot_name).to_string();
+    let root = BitMapBackend::new(&name, (640, 480)).into_drawing_area();
     root.fill(&WHITE).unwrap();
     let mut plot = ChartBuilder::on(&root)
         .caption("Loss", ("sans-serif", 30).into_font())
@@ -54,9 +40,10 @@ fn plot_loss(train_loss_list: &Vec<f64>) {
     .unwrap();
 }
 
-fn plot_accuracy(train_accuracy_list: &Vec<f64>, test_accuracy_list: &Vec<f64>) {
+fn plot_accuracy(train_accuracy_list: &Vec<f64>, test_accuracy_list: &Vec<f64>, plot_name: &str) {
     let epocn_num = train_accuracy_list.len();
-    let root = BitMapBackend::new("Accuracy Overfit.png", (640, 480)).into_drawing_area();
+    let name = format!("{}.png", plot_name).to_string();
+    let root = BitMapBackend::new(&name, (640, 480)).into_drawing_area();
     root.fill(&WHITE).unwrap();
     let mut plot = ChartBuilder::on(&root)
         .caption("Accuracy", ("sans-serif", 30).into_font())

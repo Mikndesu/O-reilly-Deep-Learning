@@ -1,10 +1,12 @@
+use std::time::Instant;
+
 use multi_layer_net::multi_layer_net;
 use mylib::mnist::{self, load_label, load_normalised_image, DatasetType};
 use rand::seq::IteratorRandom;
 
-use crate::optimiser::sgd;
+use crate::{optimiser::sgd, plot_accuracy, plot_loss};
 
-pub fn train() -> (Vec<f64>, Vec<f64>, Vec<f64>) {
+fn train() -> (Vec<f64>, Vec<f64>, Vec<f64>) {
     let dataset_dir = std::env::current_dir().unwrap().join("dataset");
     mnist::init_mnist();
     let train_img = load_normalised_image(DatasetType::TrainImg, &dataset_dir)
@@ -85,4 +87,26 @@ pub fn train() -> (Vec<f64>, Vec<f64>, Vec<f64>) {
         }
     }
     (train_loss_list, train_accuracy_list, test_accuracy_list)
+}
+
+pub fn overfit_weight_decay_train() {
+    let start = Instant::now();
+    let (train_loss_list, train_accuracy_list, test_accuracy_list) = train();
+    let end = start.elapsed();
+    println!("Training has finished! Now starting to plot.");
+    plot_loss(&train_loss_list, "Iteration Overfit");
+    plot_accuracy(
+        &train_accuracy_list,
+        &test_accuracy_list,
+        "Accuracy Overfit",
+    );
+    println!(
+        "Training takes {}.{:03}s",
+        end.as_secs(),
+        end.subsec_millis()
+    );
+    println!(
+        "Testdata accuracy is {:.1}%",
+        test_accuracy_list.last().unwrap() * 100.0
+    );
 }
