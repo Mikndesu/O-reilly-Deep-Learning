@@ -11,7 +11,7 @@ pub struct Affine {
 }
 
 impl Layer for Affine {
-    fn forwards(&mut self, x: &na::DMatrix<f64>) -> na::DMatrix<f64> {
+    fn forwards(&mut self, x: &na::DMatrix<f64>, train_flg: bool) -> na::DMatrix<f64> {
         self.x = x.clone();
         #[allow(non_snake_case)]
         let B = na::DMatrix::<f64>::from_row_slice(
@@ -53,7 +53,7 @@ fn test_affine() {
     let w = na::DMatrix::<f64>::from_element(50, 10, 0.0);
     let b = na::DVector::<f64>::from_element(10, 0.0);
     let mut affine = Affine::new(Rc::new(RefCell::new(w)), Rc::new(RefCell::new(b)));
-    dbg!(affine.forwards(&x).shape());
+    dbg!(affine.forwards(&x, false).shape());
     let dy = na::DMatrix::<f64>::from_element(20, 10, 0.0);
     dbg!(affine.backwards(&dy).shape());
     dbg!(affine.dw.shape());

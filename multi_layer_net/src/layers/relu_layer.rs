@@ -5,7 +5,7 @@ pub struct Relu {
 }
 
 impl Layer for Relu {
-    fn forwards(&mut self, x: &na::DMatrix<f64>) -> na::DMatrix<f64> {
+    fn forwards(&mut self, x: &na::DMatrix<f64>, train_flg: bool) -> na::DMatrix<f64> {
         self.mask = na::DMatrix::<bool>::from_element(x.shape().0, x.shape().1, false);
         let mut output = x.clone();
         for i in 0..x.shape().0 {
@@ -46,11 +46,10 @@ impl Relu {
 fn test_relu() {
     let mut relu_layer = Relu::new();
     assert_eq!(
-        relu_layer.forwards(&na::DMatrix::<f64>::from_vec(
-            2,
-            2,
-            vec![1.0, 0.0, -0.5, 3.0]
-        )),
+        relu_layer.forwards(
+            &na::DMatrix::<f64>::from_vec(2, 2, vec![1.0, 0.0, -0.5, 3.0]),
+            false
+        ),
         na::DMatrix::<f64>::from_vec(2, 2, vec![1.0, 0.0, 0.0, 3.0])
     );
     assert_eq!(

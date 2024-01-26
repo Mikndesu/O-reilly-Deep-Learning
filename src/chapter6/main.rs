@@ -1,4 +1,5 @@
-use overfit_weight_decay::overfit_weight_decay_train;
+use over_fit_decay_batch_norm::overfit_weight_decay_batch_norm_train;
+// use overfit_weight_decay::overfit_weight_decay_train;
 use plotters::{
     backend::BitMapBackend,
     chart::ChartBuilder,
@@ -11,10 +12,12 @@ use plotters::{
 extern crate nalgebra as na;
 
 pub mod optimiser;
-pub mod overfit_weight_decay;
+mod over_fit_decay_batch_norm;
+mod overfit_weight_decay;
 
 fn main() {
-    overfit_weight_decay_train();
+    // overfit_weight_decay_train();
+    overfit_weight_decay_batch_norm_train();
 }
 
 fn plot_loss(train_loss_list: &Vec<f64>, plot_name: &str) {
