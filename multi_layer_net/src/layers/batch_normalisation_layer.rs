@@ -1,8 +1,6 @@
-use core::panic;
 use std::{cell::RefCell, rc::Rc};
 
-use nalgebra::dmatrix;
-use rand_distr::num_traits::Pow;
+use rayon::iter::{IndexedParallelIterator, IntoParallelRefIterator, ParallelIterator};
 
 use super::Layer;
 
@@ -76,29 +74,24 @@ impl Layer for BatchNormalisationLayer {
             self.running_mean = self.momentum * &self.running_mean + (1.0 - self.momentum) * mu;
             self.running_var = self.momentum * &self.running_var + (1.0 - self.momentum) * var;
         } else {
-            for i in 0..xc.nrows() {
-                for j in 0..xc.ncols() {
-                    let index = (i, j);
-                    xc[index] = x[index] - self.running_mean[j];
-                }
-            }
+            xc.par_column_iter_mut()
+                .zip(self.running_mean.as_slice().par_iter())
+                .for_each(|(mut col, a)| col.add_scalar_mut(-a));
             let mut std = self.running_var.clone();
             std.apply(|a| *a = (*a + 10e-7).sqrt());
-            xn = na::DMatrix::zeros(x.nrows(), x.ncols());
-            for i in 0..xn.nrows() {
-                for j in 0..xn.ncols() {
-                    let index = (i, j);
-                    xn[index] = xc[index] / std[j];
-                }
-            }
+            xn = xc.clone();
+            xn.par_column_iter_mut()
+                .zip(std.as_slice().par_iter())
+                .for_each(|(mut col, a)| col /= *a);
         }
-        let mut out = na::DMatrix::zeros(x.nrows(), x.ncols());
-        for i in 0..out.nrows() {
-            for j in 0..out.ncols() {
-                let index = (i, j);
-                out[index] = xn[index] * self.gamma.borrow()[j] + self.beta.borrow()[j];
-            }
-        }
+        let mut out = xn;
+        out.par_column_iter_mut()
+            .zip(self.gamma.borrow().as_slice().par_iter())
+            .zip(self.beta.borrow().as_slice().par_iter())
+            .for_each(|((mut col, a), b)| -> () {
+                col /= *a;
+                col.add_scalar_mut(*b);
+            });
         out
     }
 
@@ -152,11 +145,4 @@ impl Layer for BatchNormalisationLayer {
         self.dbeta = dbeta;
         dx
     }
-}
-
-#[test]
-fn aaa() {
-    let a = dmatrix![1,2,3;4,5,6].cast::<f64>();
-    let mu = na::DVector::<f64>::from_fn(a.ncols(), |i, _| a.column(i).mean());
-    assert_eq!(a.row_mean().transpose(), mu);
 }

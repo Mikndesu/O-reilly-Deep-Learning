@@ -866,6 +866,7 @@ dependencies = [
  "nalgebra",
  "rand",
  "rand_distr",
+ "rayon",
  "reqwest",
 ]
 
@@ -893,6 +894,7 @@ dependencies = [
  "num-complex",
  "num-rational",
  "num-traits",
+ "rayon",
  "simba",
  "typenum",
 ]
@@ -1048,6 +1050,7 @@ dependencies = [
  "plotters",
  "rand",
  "rand_distr",
+ "rayon",
 ]
 
 [[package]]
