@@ -1,9 +1,9 @@
 use std::{cell::RefCell, rc::Rc};
 
 use nalgebra::Scalar;
+use rand_distr::num_traits::Pow;
 
 use crate::{
-    grads::Grads,
     grads_exteded::GradsExt,
     init_matrix_with_standard_normal,
     layers::{
@@ -85,7 +85,7 @@ impl MultiLayerNetExtended {
         for idx in 0..=self.hidden_layer_num {
             weight_decay += 0.5
                 * self.weight_decay_lambda
-                * self.params.borrow().weight_list[idx].borrow().norm();
+                * self.params.borrow().weight_list[idx].borrow().norm().pow(2);
         }
         self.last_layer.forwards(&y, t) + weight_decay
     }

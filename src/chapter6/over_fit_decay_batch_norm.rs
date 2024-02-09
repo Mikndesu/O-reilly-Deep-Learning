@@ -27,7 +27,7 @@ fn train() -> (Vec<f64>, Vec<f64>, Vec<f64>) {
         784,
         [100; 6].to_vec(),
         10,
-        0.0,
+        0.1,
         "relu",
         "relu",
     );

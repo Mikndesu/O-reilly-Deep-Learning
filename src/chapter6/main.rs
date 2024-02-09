@@ -22,6 +22,10 @@ fn main() {
 
 fn plot_loss(train_loss_list: &Vec<f64>, plot_name: &str) {
     let iters_num = train_loss_list.len();
+    let y_max = train_loss_list
+        .iter()
+        .max_by(|a, b| a.total_cmp(b))
+        .unwrap();
     let name = format!("{}.png", plot_name).to_string();
     let root = BitMapBackend::new(&name, (640, 480)).into_drawing_area();
     root.fill(&WHITE).unwrap();
@@ -30,7 +34,7 @@ fn plot_loss(train_loss_list: &Vec<f64>, plot_name: &str) {
         .margin(10)
         .x_label_area_size(30)
         .y_label_area_size(30)
-        .build_cartesian_2d(0.0..(iters_num as f64), 0.0..2.5)
+        .build_cartesian_2d(0.0..(iters_num as f64), 0.0..(y_max * 1.1))
         .unwrap();
     plot.configure_mesh().x_desc("Iterations").draw().unwrap();
     plot.draw_series(LineSeries::new(
